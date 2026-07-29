@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Expo
+.expo/
+.expo-shared/
+dist/
+web-build/
+*.tsbuildinfo
+
+# Native
+ios/
+android/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+npm-debug.*
+yarn-error.*
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

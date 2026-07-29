@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "Battle Buddy",
+    "slug": "battlebuddy",
+    "version": "0.2.0",
+    "orientation": "portrait",
+    "scheme": "battlebuddy",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0B0B0B"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.battlebuddy.app"
+    },
+    "android": {
+      "package": "com.battlebuddy.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0B0B0B"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store"
+    ]
+  }
+}
