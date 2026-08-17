@@ -1,6 +1,7 @@
 FILE_MANIFEST.txt
 README_AUTH_PASS.md
 README_NEXT_PASS.md
+README_STABLE_POLISH.md
 README_WELLNESS_MVP.md
 app.json
 app/(tabs)/_layout.tsx
@@ -14,9 +15,15 @@ app/consent.tsx
 app/login.tsx
 app/register.tsx
 app/reminders.tsx
+app/resources/exercise.tsx
+app/resources/financial.tsx
+app/resources/nutrition.tsx
+app/resources/sleep.tsx
+app/resources/stress.tsx
 app/safety-plan.tsx
 app/support.tsx
 app/wellness-checkin.tsx
+components/ResourcePage.tsx
 context/AuthProvider.tsx
 firebase/authServices.ts
 package.json

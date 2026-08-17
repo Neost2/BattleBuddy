@@ -1,0 +1,3 @@
+import React from 'react'
+import ResourcePage from '../../components/ResourcePage'
+export default function Sleep(){return <ResourcePage eyebrow="SLEEP" title="Build a repeatable wind-down" intro="Sleep often improves more from consistent routines than from trying to force sleep on a difficult night." bullets={["Keep wake-up time as consistent as practical.","Reduce stimulating tasks near bedtime.","Track patterns rather than judging a single bad night."]} tryToday={["Choose a simple 20-minute wind-down routine.","Put tomorrow's first task on paper so you do not have to hold it in your head.","Use your next check-in to rate sleep quality and energy separately."]}/>} 

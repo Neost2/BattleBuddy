@@ -1,0 +1,3 @@
+import React from 'react'
+import ResourcePage from '../../components/ResourcePage'
+export default function Exercise(){return <ResourcePage eyebrow="PHYSICAL WELLNESS" title="Movement that meets you where you are" intro="Physical activity can be scaled to your ability, health, and day. The goal is a sustainable routine, not an all-or-nothing workout." bullets={["Short activity still counts.","Choose movement that fits current ability and medical guidance.","Tie activity goals to routines you already have."]} tryToday={["Take a brief walk or movement break if appropriate for you.","Set a small repeatable activity goal.","Track how your energy feels after movement in your wellness check-in."]}/>} 

@@ -1,0 +1,3 @@
+import React from 'react'
+import ResourcePage from '../../components/ResourcePage'
+export default function Financial(){return <ResourcePage eyebrow="FINANCIAL WELLNESS" title="Reduce the pressure by getting organized" intro="Financial stress can affect sleep, relationships, and overall wellness. The first useful step is often making the situation visible and choosing one priority." bullets={["Separate urgent obligations from issues that can wait.","Avoid making major financial decisions from panic when possible.","Use trusted veteran, nonprofit, or professional resources for complex problems."]} tryToday={["List the three financial items creating the most stress.","Choose one call, bill, or document to handle first.","Add one financial-wellness goal to My Plan."]}/>} 

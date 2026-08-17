@@ -15,91 +15,64 @@ export default function Home() {
   const [goalsTotal, setGoalsTotal] = useState(0)
   const [stress, setStress] = useState<number | null>(null)
 
-  useFocusEffect(
-    useCallback(() => {
-      let active = true
-      Promise.all([getTodayCheckIn(), getWellnessSummary()]).then(([checkin, summary]) => {
-        if (!active) return
-        setMood(checkin?.moodLabel ?? null)
-        setGoalsDone(summary.goalsDone)
-        setGoalsTotal(summary.goalsTotal)
-        setStress(summary.latestStress)
-      })
-      return () => { active = false }
-    }, []),
-  )
+  useFocusEffect(useCallback(() => {
+    let active = true
+    Promise.all([getTodayCheckIn(), getWellnessSummary()]).then(([checkin, summary]) => {
+      if (!active) return
+      setMood(checkin?.moodLabel ?? null)
+      setGoalsDone(summary.goalsDone)
+      setGoalsTotal(summary.goalsTotal)
+      setStress(summary.latestStress)
+    })
+    return () => { active = false }
+  }, []))
 
-  const Card = ({ title, value, subtitle, onPress }: any) => (
-    <Pressable
-      onPress={onPress}
-      style={{
-        backgroundColor: colors.surface,
-        borderWidth: 1,
-        borderColor: colors.border,
-        borderRadius: radius.lg,
-        padding: spacing.lg,
-        marginBottom: spacing.md,
-      }}
-    >
-      <Text style={[typography.label, { color: colors.textMuted }]}>{title}</Text>
-      <Text style={[typography.heading, { color: colors.primary, marginTop: spacing.xs }]}>{value}</Text>
-      {!!subtitle && <Text style={{ color: colors.textMuted, marginTop: spacing.xs }}>{subtitle}</Text>}
+  const quick = (title: string, subtitle: string, route: string) => (
+    <Pressable onPress={() => router.push(route as any)} style={{ width: '48%', backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg, padding: spacing.md }}>
+      <Text style={{ color: colors.text, fontWeight: '800' }}>{title}</Text>
+      <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 4 }}>{subtitle}</Text>
     </Pressable>
   )
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top','left','right']}>
       <ScrollView contentContainerStyle={{ padding: spacing.lg, paddingBottom: 120 }}>
-        <Text style={[typography.heading, { fontSize: 28, color: colors.text }]}>Wellness Companion</Text>
-        <Text style={{ color: colors.textMuted, marginTop: spacing.xs, marginBottom: spacing.lg }}>
-          Private support, practical tools, and BattleBuddy when you want to talk.
-        </Text>
-
-        <Card
-          title="TODAY'S CHECK-IN"
-          value={mood ?? 'Ready when you are'}
-          subtitle={stress ? `Latest stress rating: ${stress}/5` : 'Mood, stress, sleep and energy'}
-          onPress={() => router.push('/wellness-checkin')}
-        />
-
-        <Card
-          title="TODAY'S PLAN"
-          value={`${goalsDone} of ${goalsTotal} goals complete`}
-          subtitle="Build small routines that support your day."
-          onPress={() => router.push('/(tabs)/plan')}
-        />
-
-        <Pressable
-          onPress={() => router.push('/(tabs)/chat')}
-          style={{ backgroundColor: colors.primary, borderRadius: radius.lg, padding: spacing.lg, marginBottom: spacing.md }}
-        >
-          <Text style={[typography.heading, { color: colors.background }]}>Talk to BattleBuddy</Text>
-          <Text style={{ color: colors.background, opacity: 0.85, marginTop: spacing.xs }}>
-            A supportive AI companion. Not a replacement for professional care.
-          </Text>
-        </Pressable>
-
-        <View style={{ flexDirection: 'row', gap: spacing.md }}>
-          <Pressable onPress={() => router.push('/safety-plan')} style={{ flex: 1, backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: radius.lg, padding: spacing.md }}>
-            <Text style={[typography.label, { color: colors.textMuted }]}>MY SAFETY PLAN</Text>
-            <Text style={{ color: colors.text, marginTop: spacing.xs }}>Keep trusted support and coping steps easy to reach.</Text>
-          </Pressable>
-          <Pressable onPress={() => router.push('/support')} style={{ flex: 1, backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: radius.lg, padding: spacing.md }}>
-            <Text style={[typography.label, { color: colors.textMuted }]}>GET SUPPORT</Text>
-            <Text style={{ color: colors.text, marginTop: spacing.xs }}>Crisis and emergency resources are one tap away.</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <View style={{ flex: 1 }}>
+            <Text style={[typography.label, { color: colors.primary }]}>VETERAN WELLNESS COMPANION</Text>
+            <Text style={[typography.heading, { fontSize: 30, marginTop: spacing.xs }]}>How are you doing today?</Text>
+          </View>
+          <Pressable onPress={() => router.push('/account')} style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 22, minWidth: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
+            <Text style={{ color: colors.primary, fontWeight: '800' }}>{isAnonymous ? 'A' : (user?.email?.[0]?.toUpperCase() || 'U')}</Text>
           </Pressable>
         </View>
 
-        <Pressable onPress={() => router.push('/account')} style={{ marginTop: spacing.lg, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg, padding: spacing.md }}>
-          <Text style={[typography.label, { color: colors.textMuted }]}>ACCOUNT</Text>
-          <Text style={{ color: colors.text, marginTop: spacing.xs }}>
-            {isAnonymous ? 'Anonymous mode — create an account anytime' : (user?.email ?? 'Signed-in account')}
-          </Text>
+        <Pressable onPress={() => router.push('/wellness-checkin')} style={{ backgroundColor: colors.primary, borderRadius: radius.lg, padding: spacing.lg, marginTop: spacing.xl }}>
+          <Text style={[typography.heading, { color: colors.background, fontSize: 21 }]}>{mood ? `Today's check-in: ${mood}` : 'Complete Today’s Check-In'}</Text>
+          <Text style={{ color: colors.background, opacity: 0.85, marginTop: spacing.xs }}>{stress ? `Latest stress: ${stress}/5` : 'Mood • stress • sleep • energy'}</Text>
         </Pressable>
 
-        <Pressable onPress={() => router.push('/settings')} style={{ marginTop: spacing.md, alignItems: 'center' }}>
-          <Text style={{ color: colors.textMuted }}>Privacy, security, backup & settings</Text>
+        <Text style={[typography.heading, { fontSize: 19, marginTop: spacing.xl, marginBottom: spacing.md }]}>Quick actions</Text>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: spacing.md }}>
+          {quick('BattleBuddy', 'Talk through what is on your mind.', '/(tabs)/chat')}
+          {quick('Safety Plan', 'Keep coping steps and support close.', '/safety-plan')}
+          {quick('Reminders', 'Medication, appointments and wellness.', '/reminders')}
+          {quick('Resources', 'Sleep, stress, nutrition and more.', '/(tabs)/wellness')}
+        </View>
+
+        <View style={{ backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg, padding: spacing.lg, marginTop: spacing.xl }}>
+          <Text style={[typography.label, { color: colors.textMuted }]}>YOUR PLAN</Text>
+          <Text style={[typography.heading, { color: colors.primary, fontSize: 25, marginTop: spacing.xs }]}>{goalsDone} of {goalsTotal}</Text>
+          <Text style={{ color: colors.textMuted }}>wellness goals complete</Text>
+          <Pressable onPress={() => router.push('/(tabs)/plan')} style={{ marginTop: spacing.md }}><Text style={{ color: colors.primary, fontWeight: '700' }}>Open My Plan ›</Text></Pressable>
+        </View>
+
+        <Pressable onPress={() => router.push('/support')} style={{ borderWidth: 1, borderColor: colors.danger, borderRadius: radius.lg, padding: spacing.lg, marginTop: spacing.lg }}>
+          <Text style={[typography.heading, { color: colors.danger, fontSize: 18 }]}>Need support now?</Text>
+          <Text style={{ color: colors.textMuted, marginTop: spacing.xs }}>Open Veterans Crisis Line and emergency support options.</Text>
         </Pressable>
+
+        <Text style={{ color: colors.textMuted, fontSize: 12, textAlign: 'center', marginTop: spacing.xl }}>BattleBuddy supports wellness and does not replace licensed healthcare professionals or crisis services.</Text>
       </ScrollView>
     </SafeAreaView>
   )

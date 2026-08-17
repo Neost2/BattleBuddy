@@ -1,16 +1,43 @@
 import React, { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { User } from 'firebase/auth'
-import { continueAnonymously as continueAnonymousService, createOrUpgradeAccount, signInUser, signOutUser, watchAuth } from '../firebase/authServices'
+import {
+  continueAnonymously as continueAnonymousService,
+  createOrUpgradeAccount,
+  signInUser,
+  signOutUser,
+  watchAuth,
+} from '../firebase/authServices'
 import { isFirebaseConfigured } from '../firebase/config'
 
 export type AuthStatus = 'loading' | 'signed-out' | 'signed-in' | 'error'
 export type AuthMode = 'anonymous' | 'account' | null
+
 interface AuthContextValue {
-  user: User | null; status: AuthStatus; mode: AuthMode; isAnonymous: boolean; error: string | null
-  continueAnonymously: () => Promise<void>; signIn: (email: string, password: string) => Promise<void>
-  createAccount: (email: string, password: string) => Promise<void>; signOut: () => Promise<void>; clearError: () => void
+  user: User | null
+  status: AuthStatus
+  mode: AuthMode
+  isAnonymous: boolean
+  error: string | null
+  continueAnonymously: () => Promise<void>
+  signIn: (email: string, password: string) => Promise<void>
+  createAccount: (email: string, password: string) => Promise<void>
+  signOut: () => Promise<void>
+  clearError: () => void
 }
-const AuthContext = createContext<AuthContextValue>({ user:null,status:'loading',mode:null,isAnonymous:false,error:null,continueAnonymously:async()=>{},signIn:async()=>{},createAccount:async()=>{},signOut:async()=>{},clearError:()=>{} })
+
+const AuthContext = createContext<AuthContextValue>({
+  user: null,
+  status: 'loading',
+  mode: null,
+  isAnonymous: false,
+  error: null,
+  continueAnonymously: async () => {},
+  signIn: async () => {},
+  createAccount: async () => {},
+  signOut: async () => {},
+  clearError: () => {},
+})
+
 function friendlyError(error: unknown): string {
   const raw = error instanceof Error ? error.message : String(error ?? '')
   if (raw.includes('auth/email-already-in-use')) return 'That email already has an account. Sign in instead.'
@@ -21,18 +48,63 @@ function friendlyError(error: unknown): string {
   if (raw.includes('auth/network-request-failed')) return 'Network error. Check your connection and try again.'
   return raw || 'Authentication failed.'
 }
-export function useAuth(): AuthContextValue { return useContext(AuthContext) }
+
+export function useAuth(): AuthContextValue {
+  return useContext(AuthContext)
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user,setUser]=useState<User|null>(null); const [status,setStatus]=useState<AuthStatus>('loading'); const [error,setError]=useState<string|null>(null)
-  useEffect(()=>{
-    if(!isFirebaseConfigured){setStatus('error');setError('Firebase is not configured. Copy .env.example to .env and add your Firebase keys.');return}
-    return watchAuth(next=>{setUser(next);setStatus(next?'signed-in':'signed-out')})
-  },[])
-  const run=async(fn:()=>Promise<unknown>)=>{setError(null);try{await fn()}catch(e){setStatus(user?'signed-in':'signed-out');setError(friendlyError(e));throw e}}
-  const value=useMemo<AuthContextValue>(()=>({
-    user,status,mode:user?(user.isAnonymous?'anonymous':'account'):null,isAnonymous:Boolean(user?.isAnonymous),error,
-    continueAnonymously:async()=>run(continueAnonymousService),signIn:async(e,p)=>run(()=>signInUser(e,p)),
-    createAccount:async(e,p)=>run(()=>createOrUpgradeAccount(e,p)),signOut:async()=>{setError(null);await signOutUser()},clearError:()=>setError(null)
-  }),[user,status,error])
+  const [user, setUser] = useState<User | null>(null)
+  const [status, setStatus] = useState<AuthStatus>('loading')
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!isFirebaseConfigured) {
+      setStatus('error')
+      setError('Firebase is not configured. Copy .env.example to .env and add your Firebase keys.')
+      return
+    }
+
+    return watchAuth(nextUser => {
+      setUser(nextUser)
+      setStatus(nextUser ? 'signed-in' : 'signed-out')
+    })
+  }, [])
+
+  const run = async (fn: () => Promise<unknown>) => {
+    setError(null)
+    try {
+      await fn()
+    } catch (e) {
+      setStatus(user ? 'signed-in' : 'signed-out')
+      setError(friendlyError(e))
+      throw e
+    }
+  }
+
+  const value = useMemo<AuthContextValue>(() => ({
+    user,
+    status,
+    mode: user ? (user.isAnonymous ? 'anonymous' : 'account') : null,
+    isAnonymous: Boolean(user?.isAnonymous),
+    error,
+    continueAnonymously: async () => run(continueAnonymousService),
+    signIn: async (email, password) => run(() => signInUser(email, password)),
+    createAccount: async (email, password) => run(() => createOrUpgradeAccount(email, password)),
+    signOut: async () => {
+      setError(null)
+      // Update local state immediately so Expo Router leaves protected tabs even on web.
+      setUser(null)
+      setStatus('signed-out')
+      try {
+        await signOutUser()
+      } catch (e) {
+        setError(friendlyError(e))
+        throw e
+      }
+    },
+    clearError: () => setError(null),
+  }), [user, status, error])
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

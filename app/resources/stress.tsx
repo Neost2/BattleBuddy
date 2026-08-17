@@ -1,0 +1,3 @@
+import React from 'react'
+import ResourcePage from '../../components/ResourcePage'
+export default function Stress(){return <ResourcePage eyebrow="STRESS & RESILIENCE" title="Steady the next few minutes" intro="Stress can narrow attention and make everything feel urgent. Small grounding actions can help you regain enough space to choose your next step." bullets={["Slow the pace before solving the whole problem.","Notice what is in your control right now.","Use your Safety Plan when stress starts to feel unmanageable."]} tryToday={["Take five slow breaths with a longer exhale.","Name five things you can see and four you can feel.","Pick one task that can realistically be completed in ten minutes."]}/>} 

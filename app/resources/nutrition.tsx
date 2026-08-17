@@ -1,0 +1,3 @@
+import React from 'react'
+import ResourcePage from '../../components/ResourcePage'
+export default function Nutrition(){return <ResourcePage eyebrow="NUTRITION" title="Keep healthy choices practical" intro="Wellness nutrition does not need to be perfect. Reliable meals, hydration, and simple planning can support energy and daily functioning." bullets={["Aim for consistency before complexity.","Keep water and easy meal options accessible.","Notice whether skipped meals affect mood, stress, or energy."]} tryToday={["Drink a glass of water with your next meal.","Plan one easy meal for tomorrow.","Add one realistic nutrition goal to My Plan."]}/>} 
