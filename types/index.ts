@@ -28,3 +28,13 @@ export interface AppUser {
 	uid: string
 	isAnonymous: boolean
 }
+
+export interface MoodCheckIn {
+  id: string;
+  mood: number;
+  stress: number;
+  sleep: number;
+  energy: number;
+  note?: string;
+  createdAt: string;
+}

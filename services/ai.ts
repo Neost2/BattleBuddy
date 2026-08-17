@@ -31,7 +31,7 @@ export async function sendToBattleBuddy(history: ChatMessage[]): Promise<string>
 
   if (lastUser && looksLikeCrisis(lastUser.content)) {
     return (
-      "I want to help you connect with a real person right now. I’m a wellness companion, not an emergency service. " +
+      "I want to help you stay safe and connect with a real person right now. I’m a wellness companion, not an emergency service. " +
       "If you may be in immediate danger, call 911. Veterans in the U.S. can call 988 and Press 1 or text 838255. " +
       "You can also open Get Support Now in this app. I can stay with you while you reach out."
     )
@@ -113,7 +113,7 @@ function offlineResponder(history: ChatMessage[], wellnessContext: string): stri
   }
 
   return (
-    "I'm listening. We can work through this one piece at a time. " +
+    "I'm listening. We are currently in offline mode. We can work through this one piece at a time. " +
     "If it helps, we can connect what you're dealing with to one of your current wellness goals or your safety plan."
   )
 }
