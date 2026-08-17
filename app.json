@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Battle Buddy",
+    "name": "Wellness Companion",
     "slug": "battlebuddy",
-    "version": "0.2.0",
+    "version": "0.5.0",
     "orientation": "portrait",
     "scheme": "battlebuddy",
     "userInterfaceStyle": "dark",
@@ -27,7 +27,8 @@
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-notifications"
     ]
   }
 }

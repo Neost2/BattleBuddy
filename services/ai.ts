@@ -1,97 +1,119 @@
-/**
- * AI service interface.
- *
- * - If EXPO_PUBLIC_OPENAI_API_KEY is set, Battle Buddy calls OpenAI.
- * - Otherwise it uses a built-in, offline responder so chat works out of the box.
- *
- * This is the seam that later swaps to a local llama.cpp runtime on the
- * Raspberry Pi (Battle Buddy device) without changing any screen code.
- */
 import type { ChatMessage } from '../types'
 import { BATTLE_BUDDY_SYSTEM_PROMPT } from '../constants/identity'
+import { getAiWellnessContext } from './aiWellnessContext'
 
+const CLOUD_ENDPOINT = process.env.EXPO_PUBLIC_BATTLEBUDDY_API_URL
 const OPENAI_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY
 const OPENAI_MODEL = process.env.EXPO_PUBLIC_OPENAI_MODEL || 'gpt-5.4-mini'
 
-/** Basic keyword screen so Battle Buddy can respond with care in higher-risk moments. */
 const CRISIS_TERMS = [
-	'suicide',
-	'kill myself',
-	'end my life',
-	'want to die',
-	'hurt myself',
-	'self harm',
-	'self-harm',
-	'no reason to live',
+  'suicide',
+  'kill myself',
+  'end my life',
+  'want to die',
+  'hurt myself',
+  'self harm',
+  'self-harm',
+  'no reason to live',
 ]
 
 function looksLikeCrisis(text: string): boolean {
-	const t = text.toLowerCase()
-	return CRISIS_TERMS.some((k) => t.includes(k))
+  const t = text.toLowerCase()
+  return CRISIS_TERMS.some(k => t.includes(k))
 }
 
 export function isAiConfigured(): boolean {
-	return Boolean(OPENAI_KEY)
+  return Boolean(CLOUD_ENDPOINT || OPENAI_KEY)
 }
 
-/** Send the conversation to Battle Buddy and get a reply. */
 export async function sendToBattleBuddy(history: ChatMessage[]): Promise<string> {
-	const lastUser = [...history].reverse().find((m) => m.role === 'user')
-	if (lastUser && looksLikeCrisis(lastUser.content)) {
-		return (
-			"I'm really glad you told me, and I want you to be safe. I'm not able to handle an emergency, " +
-			'but you deserve immediate support. If you might be in danger, please reach out to your local ' +
-			'emergency number, or a crisis line such as 988 (US Suicide & Crisis Lifeline), or someone you ' +
-			"trust nearby. I'm here to keep talking with you while you do."
-		)
-	}
+  const lastUser = [...history].reverse().find(m => m.role === 'user')
 
-	if (OPENAI_KEY) {
-		try {
-			return await callOpenAi(history)
-		} catch {
-			// Fall back to the offline responder if the network/model call fails.
-		}
-	}
-	return offlineResponder(history)
+  if (lastUser && looksLikeCrisis(lastUser.content)) {
+    return (
+      "I want to help you connect with a real person right now. I’m a wellness companion, not an emergency service. " +
+      "If you may be in immediate danger, call 911. Veterans in the U.S. can call 988 and Press 1 or text 838255. " +
+      "You can also open Get Support Now in this app. I can stay with you while you reach out."
+    )
+  }
+
+  const wellnessContext = await getAiWellnessContext()
+
+  if (CLOUD_ENDPOINT) {
+    try {
+      return await callSecureEndpoint(history, wellnessContext)
+    } catch {
+      // Offline fallback below.
+    }
+  }
+
+  // Development fallback only. Production builds should use the secure endpoint above
+  // so a provider API key is never shipped inside the Expo bundle.
+  if (OPENAI_KEY) {
+    try {
+      return await callOpenAiDevelopmentFallback(history, wellnessContext)
+    } catch {
+      // Offline fallback below.
+    }
+  }
+
+  return offlineResponder(history, wellnessContext)
 }
 
-async function callOpenAi(history: ChatMessage[]): Promise<string> {
-	const messages = [
-		{ role: 'system', content: BATTLE_BUDDY_SYSTEM_PROMPT },
-		...history.map((m) => ({ role: m.role, content: m.content })),
-	]
-	const res = await fetch('https://api.openai.com/v1/chat/completions', {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			Authorization: `Bearer ${OPENAI_KEY}`,
-		},
-		body: JSON.stringify({ model: OPENAI_MODEL, messages, temperature: 0.7 }),
-	})
-	if (!res.ok) {
-		throw new Error('AI request failed: ' + res.status)
-	}
-	const data = await res.json()
-	const content: string = data?.choices?.[0]?.message?.content ?? ''
-	return content.trim() || offlineResponder(history)
+async function callSecureEndpoint(history: ChatMessage[], wellnessContext: string): Promise<string> {
+  const res = await fetch(CLOUD_ENDPOINT!, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      messages: history.map(m => ({ role: m.role, content: m.content })),
+      wellnessContext,
+    }),
+  })
+  if (!res.ok) throw new Error(`BattleBuddy API failed: ${res.status}`)
+  const data = await res.json()
+  const content = String(data?.reply ?? '').trim()
+  if (!content) throw new Error('BattleBuddy API returned an empty reply')
+  return content
 }
 
-/** A calm, reflective offline reply. Never pretends to be human. */
-function offlineResponder(history: ChatMessage[]): string {
-	const lastUser = [...history].reverse().find((m) => m.role === 'user')
-	const text = lastUser?.content.trim() ?? ''
-	if (!text) {
-		return "I'm here. Whenever you're ready, tell me what's on your mind."
-	}
-	const opener = [
-		'Thanks for telling me that.',
-		'I hear you.',
-		"I'm listening.",
-	][text.length % 3]
-	return (
-		`${opener} It sounds like this is on your mind right now. ` +
-		'We can take it one step at a time. What feels like the most important part to start with? ' +
-		'(Note: Battle Buddy is running in offline mode. Add an OpenAI key in your .env to enable full replies.)'
-	)
+async function callOpenAiDevelopmentFallback(history: ChatMessage[], wellnessContext: string): Promise<string> {
+  const messages = [
+    { role: 'system', content: `${BATTLE_BUDDY_SYSTEM_PROMPT}\n\n${wellnessContext}` },
+    ...history.map(m => ({ role: m.role, content: m.content })),
+  ]
+
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${OPENAI_KEY}`,
+    },
+    body: JSON.stringify({ model: OPENAI_MODEL, messages, temperature: 0.7 }),
+  })
+
+  if (!res.ok) throw new Error('AI request failed: ' + res.status)
+  const data = await res.json()
+  const content: string = data?.choices?.[0]?.message?.content ?? ''
+  return content.trim() || offlineResponder(history, wellnessContext)
+}
+
+function offlineResponder(history: ChatMessage[], wellnessContext: string): string {
+  const lastUser = [...history].reverse().find(m => m.role === 'user')
+  const text = lastUser?.content.trim() ?? ''
+
+  if (!text) return "I'm here. Whenever you're ready, tell me what's on your mind."
+
+  const stress = wellnessContext.match(/stress (\d)\/5/)
+  if (stress && Number(stress[1]) >= 4) {
+    return (
+      "Thanks for telling me. Your latest check-in also shows higher stress. " +
+      "I can help you focus on one manageable next step, or you can open your Safety Plan or Get Support Now. " +
+      "What would feel most useful right now?"
+    )
+  }
+
+  return (
+    "I'm listening. We can work through this one piece at a time. " +
+    "If it helps, we can connect what you're dealing with to one of your current wellness goals or your safety plan."
+  )
 }
