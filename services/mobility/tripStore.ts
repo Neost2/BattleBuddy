@@ -1,25 +1,24 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { Trip } from './tripService'
 
-const KEY='battlebuddy.trips.v1'
+const KEY='battlebuddy.trips.v2'
 
-export type Trip = {
- id:string
- destination:string
- date:string
- time:string
- assistance:boolean
- notes:string
- status:'planned'|'requested'
- createdAt:number
-}
-
-export async function getTrips():Promise<Trip[]>{
+export async function getTrips(userId?: string):Promise<Trip[]>{
  const raw=await AsyncStorage.getItem(KEY)
- return raw?JSON.parse(raw):[]
+ if(!raw) return []
+ try {
+  const all = JSON.parse(raw) as Trip[]
+  return (userId ? all.filter(x => x.userId === userId) : all).sort((a,b)=>b.createdAt-a.createdAt)
+ } catch { return [] }
 }
 
 export async function saveTrip(trip:Trip){
- const trips=await getTrips()
- await AsyncStorage.setItem(KEY, JSON.stringify([trip,...trips]))
+ const raw=await AsyncStorage.getItem(KEY)
+ let trips:Trip[]=[]
+ try { trips=raw?JSON.parse(raw):[] } catch { trips=[] }
+ const next=[trip,...trips.filter(x=>x.id!==trip.id)]
+ await AsyncStorage.setItem(KEY, JSON.stringify(next))
  return trip
 }
+
+export async function updateTrip(trip:Trip){ return saveTrip(trip) }
