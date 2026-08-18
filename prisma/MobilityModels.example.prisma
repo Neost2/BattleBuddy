@@ -1,0 +1,16 @@
+model SavedLocation {
+  id String @id @default(cuid())
+  userId String
+  type String
+  encryptedAddress String
+  createdAt DateTime @default(now())
+}
+
+model TripRequest {
+  id String @id @default(cuid())
+  userId String
+  encryptedDestination String
+  assistanceRequested Boolean @default(false)
+  status String
+  createdAt DateTime @default(now())
+}

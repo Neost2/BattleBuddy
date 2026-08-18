@@ -1,0 +1,9 @@
+model ConsentLog {
+  id            String   @id @default(cuid())
+  userId        String
+  consentType   String
+  granted       Boolean
+  version       String?
+  source        String?
+  createdAt     DateTime @default(now())
+}

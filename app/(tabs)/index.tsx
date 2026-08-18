@@ -37,6 +37,11 @@ export default function Home() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top','left','right']}>
       <ScrollView contentContainerStyle={{ padding: spacing.lg, paddingBottom: 120 }}>
+      <Pressable onPress={() => router.push('/trips')} style={{padding:16,borderWidth:1,borderColor:colors.border,borderRadius:radius.lg,marginBottom:12}}>
+        <Text style={{fontSize:18,fontWeight:'700'}}>🚗 My Trips</Text>
+        <Text style={{color:colors.textMuted}}>Plan appointments, save locations, and request assistance.</Text>
+      </Pressable>
+
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <View style={{ flex: 1 }}>
             <Text style={[typography.label, { color: colors.primary }]}>VETERAN WELLNESS COMPANION</Text>

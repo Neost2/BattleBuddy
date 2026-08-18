@@ -31,10 +31,17 @@ export interface AppUser {
 
 export interface MoodCheckIn {
   id: string;
+
   mood: number;
+  moodLabel: string;
+
   stress: number;
   sleep: number;
   energy: number;
+
   note?: string;
-  createdAt: string;
+
+  date: string;
+
+  createdAt: number;
 }

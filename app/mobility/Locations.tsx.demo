@@ -1,0 +1,17 @@
+// Saved Locations UI
+//
+// Fields:
+// name
+// type
+// address
+// city
+// state
+// zip
+// notes
+//
+// Types:
+// HOME
+// VA_MEDICAL
+// DOCTOR
+// PHARMACY
+// OTHER

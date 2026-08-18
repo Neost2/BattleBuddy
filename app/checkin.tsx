@@ -22,7 +22,7 @@ export default function CheckIn() {
 		getTodayCheckIn().then((c) => {
 			if (c) {
 				setMood(c.mood)
-				setNote(c.note)
+				setNote(c.note ?? '')
 			}
 		})
 	}, [])
